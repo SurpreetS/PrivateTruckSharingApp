@@ -9,105 +9,131 @@
 package com.example.week9;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
+
+
 import java.util.ArrayList;
-import sqllitehelper.UserData;
+
+import sqllitehelper.MyOrderData;
+
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
-    // Context object to be used in the adapter
+    // Define variables for the context and list of data models
     Context mContext;
+    ArrayList<MyDataModel> trucksList;
 
-    // ArrayList to hold the data for the adapter
-    ArrayList<UserData> dataList;
-
-    public MyAdapter(Context mContext, ArrayList<UserData> dataList) {
-        // Constructor to initialize the adapter with the context and data list
+    // Constructor for MyAdapter class
+    public MyAdapter(Context mContext, ArrayList<MyDataModel> trucksList) {
+        // Initialize context and list of data models
         this.mContext = mContext;
-        this.dataList = dataList;
+        this.trucksList = trucksList;
     }
 
+
+    // Override onCreateViewHolder method to inflate layout for each item in RecyclerView
     @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Create a new view by inflating the layout file for each item in the RecyclerView
-        View view = LayoutInflater.from(mContext).inflate(R.layout.recycyclerview_layout, parent, false);
+    public MyAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
+        // Inflate layout for each item in RecyclerView
+        View view = LayoutInflater.from(mContext).inflate(R.layout.recyclerview_layout, parent, false);
+        // Return ViewHolder with inflated view
         return new MyViewHolder(view);
     }
 
+    // Override onBindViewHolder method to bind data to layout views
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        // Bind the data to the views in the ViewHolder
-        holder.mTextViewDescription.setText(displayString(dataList.get(position).getDescription()));
+    public void onBindViewHolder(@NonNull MyAdapter.MyViewHolder holder, int position) {
+
+        // Bind data to views in layout
+        holder.mTextView.setText(trucksList.get(position).getTruckName());
+        holder.mTextViewDescription.setText(trucksList.get(position).getDescription());
+        holder.imageView.setImageResource(trucksList.get(position).getImage());
     }
 
+    // Override getItemCount method to return the size of the list of data models
     @Override
     public int getItemCount() {
-        // Return the size of the data list
-        return dataList.size();
+        return trucksList.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        // ViewHolder class to hold the views for each item in the RecyclerView
-        TextView mTextViewDescription;
+    // Define MyViewHolder class to hold layout views for each item in RecyclerView
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+        // Define layout views
+        TextView mTextView, mTextViewDescription;
+        ImageView imageView, shareImageView;
 
+        // Constructor for MyViewHolder class
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Initialize the TextView from the layout file
-            mTextViewDescription = itemView.findViewById(R.id.itemTextView);
-            // Set click listener on the itemView
+            // Find views by their IDs in layout
+            mTextView = itemView.findViewById(R.id.nameTextView);
+            mTextViewDescription = itemView.findViewById(R.id.descriptionTextView);
+            imageView = itemView.findViewById(R.id.imageView);
+            // Set click listener for item view
             itemView.setOnClickListener(this);
+            shareImageView = itemView.findViewById(R.id.imageView3);
+            // Set click listener for item view
+            itemView.setOnClickListener(this);
+            shareImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        MyDataModel truck = trucksList.get(position);
+                        // Perform the share action for the clicked truck
+                        performShareAction(truck);
+                    }
+
+                }
+            });
         }
 
-        @Override
-        public void onClick(View v) {
-            int position = getAdapterPosition();
-            if (position != RecyclerView.NO_POSITION) {
-                // Get the clicked data from the data list
-                UserData clickedData = dataList.get(position);
-                // Create a new instance of the DetailsFragment with the clicked data
-                Fragment fragment = DetailsFragment.newInstance(clickedData);
-                // Get the FragmentManager from the activity
-                FragmentManager fragmentManager = ((AppCompatActivity) mContext).getSupportFragmentManager();
-                // Start a new FragmentTransaction
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-                // Replace the current fragment with the DetailsFragment
-                transaction.replace(R.id.mainActivityLayout, fragment);
-                // Add the transaction to the back stack
-                transaction.addToBackStack(null);
-                // Commit the transaction
-                transaction.commit();
+        private void performShareAction(MyDataModel order) {
+            String shareTitle = order.getTruckName();
+            String shareDescription = order.getDescription();
+            // You can add more details from the order object as needed
+
+            String shareText = shareTitle + "\n" + shareDescription;
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+            Intent chooserIntent = Intent.createChooser(shareIntent, "Share via");
+
+            if (shareIntent.resolveActivity(mContext.getPackageManager()) != null) {
+                mContext.startActivity(chooserIntent);
+            } else {
+                Toast.makeText(mContext, "No app available to share", Toast.LENGTH_SHORT).show();
             }
         }
-    }
 
-    public String displayString(String originalString) {
-        // Split the original string into words
-        String[] words = originalString.split("\\s+");
-        // Create a StringBuilder to build the display text
-        StringBuilder displayText = new StringBuilder();
-        // Determine the number of words to display (up to 3)
-        int count = Math.min(words.length, 3);
-        // Append the first count words to the display text
-        for (int i = 0; i < count; i++) {
-            displayText.append(words[i]).append(" ");
+        // Override onClick method to handle item click events
+        @Override
+        public void onClick(View v) {
+//            // Create new NewsFragment with position and list of data models as arguments
+//            Fragment fragment = OrderDetailsFragment.newInstance();
+//            // Get FragmentManager from current activity
+//            FragmentManager fragmentManager = ((AppCompatActivity) mContext).getSupportFragmentManager();
+//            // Start new transaction to replace current fragment with NewsFragment
+//            FragmentTransaction transaction = fragmentManager.beginTransaction();
+//            transaction.replace(R.id.mainActivityLayout, fragment);
+//            transaction.addToBackStack(null);
+//            transaction.commit();
         }
-        // If there are more than 3 words, append "..." to the display text
-        if (words.length > 3) {
-            displayText.append("...");
-        }
-        // Trim the display text and convert it to a string
-        String displayedText = displayText.toString().trim();
-        // Return the displayed text
-        return displayedText;
     }
 }

@@ -14,14 +14,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"></LinearLayout>
 
-<!--    <fragment xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--        xmlns:tools="http://schemas.android.com/tools"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:id="@+id/map"-->
-<!--        tools:context=".MapsActivity"-->
-<!--        android:name="com.google.android.gms.maps.SupportMapFragment" />-->
+    <LinearLayout
+        android:id="@+id/hamburgerLayout"
+        android:layout_width="170dp"
+        android:layout_height="200dp"
+        android:orientation="vertical"
+        android:layout_marginTop="30dp"
+        app:layout_constraintStart_toStartOf="@+id/mainActivityLayout"
+        app:layout_constraintTop_toTopOf="@+id/mainActivityLayout"></LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

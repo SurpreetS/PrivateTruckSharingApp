@@ -8,19 +8,21 @@
 
 package com.example.week9;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-
-import java.util.List;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import sqllitehelper.DatabaseHelper;
-import sqllitehelper.UserData;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,25 +31,24 @@ import sqllitehelper.UserData;
  */
 public class MainFragment extends Fragment {
 
-    DatabaseHelper databaseHelper; // Declaring a variable of type DatabaseHelper
 
+    DatabaseHelper databaseHelper;
     public MainFragment() {
         // Required empty public constructor
     }
 
     // TODO: Rename and change types and number of parameters
     public static MainFragment newInstance() {
-        MainFragment fragment = new MainFragment(); // Creating a new instance of the MainFragment class
-        Bundle args = new Bundle(); // Creating a new instance of the Bundle class
-        fragment.setArguments(args); // Setting the arguments for the fragment
-        return fragment; // Returning the created fragment
+        MainFragment fragment = new MainFragment();
+        Bundle args = new Bundle();
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            // Perform any operations with the arguments if needed
         }
     }
 
@@ -55,50 +56,58 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_main, container, false); // Inflating the fragment layout
-        Button lostFoundButton = view.findViewById(R.id.button2); // Finding the button with the id "button2"
-        Button newAdvertButton = view.findViewById(R.id.button); // Finding the button with the id "button"
-        Button showOnMap = view.findViewById(R.id.button5);
+        View view = inflater.inflate(R.layout.fragment_main, container, false);
+        Button signupButton = view.findViewById(R.id.button2);
+        Button loginButton = view.findViewById(R.id.button);
+        EditText userName = view.findViewById(R.id.editTextUserName);
+        EditText passWord = view.findViewById(R.id.editTextPassword);
 
-        newAdvertButton.setOnClickListener(new View.OnClickListener() {
+
+
+        loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Fragment fragment = NewAdvertFragment.newInstance(); // Creating a new instance of the NewAdvertFragment class
-                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction(); // Starting a new fragment transaction
-                transaction.replace(R.id.mainActivityLayout, fragment); // Replacing the current fragment with the NewAdvertFragment
-                transaction.addToBackStack(null); // Adding the transaction to the back stack
-                transaction.commit(); // Committing the transaction
-            }
-        });
+                String username = userName.getText().toString();
+                String password = passWord.getText().toString();
 
-        lostFoundButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Fragment fragment = LostFoundFragment.newInstance(); // Creating a new instance of the LostFoundFragment class
-                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction(); // Starting a new fragment transaction
-                transaction.replace(R.id.mainActivityLayout, fragment); // Replacing the current fragment with the LostFoundFragment
-                transaction.addToBackStack(null); // Adding the transaction to the back stack
-                transaction.commit(); // Committing the transaction
-            }
-        });
+                databaseHelper= new DatabaseHelper(getContext());
 
-        showOnMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DatabaseHelper databaseHelper = new DatabaseHelper(getContext()); //declaring databaseHelper for getting the stored items
+                boolean result = databaseHelper.getUser(
+                        userName.getText().toString(), passWord.getText().toString()
+                );
 
-                List<UserData> userDataList = databaseHelper.getAllLostFoundItems(); //retrieving items from database
+                if(result ==true){
+                    Toast.makeText(getContext(), "Login Successful", Toast.LENGTH_SHORT).show();
 
-                Fragment fragment = ShowOnMapFragment.newInstance(userDataList);
-                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction(); // Starting a new fragment transaction
-                transaction.replace(R.id.mainActivityLayout, fragment); // Replacing the current fragment with the LostFoundFragment
-                transaction.addToBackStack(null); // Adding the transaction to the back stack
-                transaction.commit(); // Committing the transaction
+                    Fragment fragment = HomeFragment.newInstance();
+                    // Start new transaction to replace current fragment with SignupFragment
+                    FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                    transaction.replace(R.id.mainActivityLayout, fragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                }
+                else {
+                    Toast.makeText(getContext(), "User Does not Exist", Toast.LENGTH_SHORT).show();
+
+                }
 
             }
         });
 
+        signupButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        return view; // Returning the inflated view
+                Fragment fragment = SignUpFragment.newInstance();
+                // Start new transaction to replace current fragment with SignupFragment
+                FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.mainActivityLayout, fragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+            }
+        });
+
+
+        return view;
     }
 }
